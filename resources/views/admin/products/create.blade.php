@@ -60,7 +60,7 @@
                 <select name="category" class="w-full border border-gray-300 p-3 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent transition-shadow" required>
                     <option value="" disabled selected>Select a category</option>
                     @foreach($categories as $category)
-                        <option value="{{ $category->id }}" {{ old('category') == $category->id ? 'selected' : '' }}>
+                        <option value="{{ $category->name }}" {{ old('category') == $category->name ? 'selected' : '' }}>
                             {{ $category->name }}
                         </option>
                     @endforeach

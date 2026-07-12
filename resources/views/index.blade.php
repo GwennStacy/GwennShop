@@ -128,4 +128,46 @@
 
     </div>
 </div>
+
+<!-- Seamless Products Section (Like Caps in Image) -->
+<div class="w-full bg-white py-16 md:py-24 relative overflow-hidden mt-8 border-t border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-12 md:gap-16 lg:gap-24 items-center justify-items-center">
+            
+            @if(isset($seamlessImages) && $seamlessImages->count() > 0)
+                @foreach($seamlessImages as $index => $image)
+                    <div class="group relative cursor-pointer w-full max-w-[320px] {{ $index === 3 ? 'sm:col-start-2 sm:mt-8' : '' }}">
+                        <img src="/seamless-image/{{ $image->id }}" 
+                             alt="{{ $image->title }}" 
+                             class="w-full h-auto object-contain mix-blend-multiply hover:scale-110 transition-transform duration-700 ease-out drop-shadow-2xl">
+                    </div>
+                @endforeach
+            @else
+                <!-- Fallback Hardcoded Seamless Images -->
+                <div class="group relative cursor-pointer w-full max-w-[320px]">
+                    <img src="https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=600&q=80" 
+                         alt="Navy Cap" 
+                         class="w-full h-auto object-contain mix-blend-multiply hover:scale-110 transition-transform duration-700 ease-out drop-shadow-2xl">
+                </div>
+                <div class="group relative cursor-pointer w-full max-w-[320px]">
+                    <img src="https://images.unsplash.com/photo-1556306535-0f09a536f01f?auto=format&fit=crop&w=600&q=80" 
+                         alt="Brown Cap" 
+                         class="w-full h-auto object-contain mix-blend-multiply hover:scale-110 transition-transform duration-700 ease-out drop-shadow-2xl">
+                </div>
+                <div class="group relative cursor-pointer w-full max-w-[320px]">
+                    <img src="https://images.unsplash.com/photo-1521369909029-1221764df3c5?auto=format&fit=crop&w=600&q=80" 
+                         alt="Green Cap" 
+                         class="w-full h-auto object-contain mix-blend-multiply hover:scale-110 transition-transform duration-700 ease-out drop-shadow-2xl">
+                </div>
+                <div class="group relative cursor-pointer w-full max-w-[320px] sm:col-start-2 sm:mt-8">
+                    <img src="https://images.unsplash.com/photo-1534349762230-e0cadf78f5da?auto=format&fit=crop&w=600&q=80" 
+                         alt="Plaid Cap" 
+                         class="w-full h-auto object-contain mix-blend-multiply hover:scale-110 transition-transform duration-700 ease-out drop-shadow-2xl">
+                </div>
+            @endif
+
+        </div>
+    </div>
+</div>
 @endsection

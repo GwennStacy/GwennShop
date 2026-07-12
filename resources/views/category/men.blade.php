@@ -48,54 +48,31 @@
             <div class="flex-1">
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
                     
-                    <div class="group relative">
-                        <div class="w-full bg-gray-100 aspect-w-3 aspect-h-4 overflow-hidden h-[450px] relative">
-                            <img src="https://images.unsplash.com/photo-1594938298598-70f70df85c22?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Tailored Wool Suit" class="w-full h-full object-cover object-center group-hover:opacity-90 transition-opacity">
-                            <div class="absolute bottom-4 left-0 right-0 px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-4 group-hover:translate-y-0">
-                                <button class="w-full bg-white text-black py-3 text-xs uppercase tracking-widest font-semibold shadow-lg hover:bg-black hover:text-white transition-colors">Quick Add</button>
-                            </div>
+                    @forelse($products as $product)
+                        <div class="group relative">
+                            <a href="/product/{{ $product->slug }}" class="block">
+                                <div class="w-full bg-gray-100 aspect-w-3 aspect-h-4 overflow-hidden h-48 md:h-[450px] relative rounded-xl md:rounded-none">
+                                    <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}" class="w-full h-full object-cover object-center group-hover:opacity-90 transition-opacity">
+                                    
+                                    <div class="absolute bottom-4 left-0 right-0 px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-4 group-hover:translate-y-0 hidden md:block">
+                                        <button class="w-full bg-white text-black py-3 text-xs uppercase tracking-widest font-semibold shadow-lg hover:bg-black hover:text-white transition-colors">Quick Add</button>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-3 md:mt-6 flex justify-between items-start">
+                                    <div>
+                                        <h3 class="text-xs md:text-sm text-gray-900 font-medium truncate max-w-[130px] md:max-w-none">{{ $product->name }}</h3>
+                                        <p class="mt-0.5 text-[10px] md:text-sm text-gray-400">{{ $product->category }}</p>
+                                    </div>
+                                    <p class="text-xs md:text-sm font-semibold text-gray-900">${{ number_format($product->price, 2) }}</p>
+                                </div>
+                            </a>
                         </div>
-                        <div class="mt-6 flex justify-between">
-                            <div>
-                                <h3 class="text-sm text-gray-900 font-medium"><a href="#">Tailored Wool Suit</a></h3>
-                                <p class="mt-1 text-sm text-gray-500">Tailoring</p>
-                            </div>
-                            <p class="text-sm font-medium text-gray-900">$450.00</p>
+                    @empty
+                        <div class="col-span-1 sm:col-span-2 lg:col-span-3 text-center py-12 text-sm text-gray-400">
+                            No products found in this category yet.
                         </div>
-                    </div>
-
-                    <div class="group relative">
-                        <div class="w-full bg-gray-100 aspect-w-3 aspect-h-4 overflow-hidden h-[450px] relative">
-                            <img src="https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Crisp Cotton Shirt" class="w-full h-full object-cover object-center group-hover:opacity-90 transition-opacity">
-                            <div class="absolute bottom-4 left-0 right-0 px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-4 group-hover:translate-y-0">
-                                <button class="w-full bg-white text-black py-3 text-xs uppercase tracking-widest font-semibold shadow-lg hover:bg-black hover:text-white transition-colors">Quick Add</button>
-                            </div>
-                        </div>
-                        <div class="mt-6 flex justify-between">
-                            <div>
-                                <h3 class="text-sm text-gray-900 font-medium"><a href="#">Crisp Cotton Shirt</a></h3>
-                                <p class="mt-1 text-sm text-gray-500">Shirts</p>
-                            </div>
-                            <p class="text-sm font-medium text-gray-900">$85.00</p>
-                        </div>
-                    </div>
-
-                    <div class="group relative">
-                        <div class="w-full bg-gray-100 aspect-w-3 aspect-h-4 overflow-hidden h-[450px] relative">
-                            <img src="https://images.unsplash.com/photo-1559551409-dadc959f76b8?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" alt="Classic Trench Coat" class="w-full h-full object-cover object-center group-hover:opacity-90 transition-opacity">
-                            <div class="absolute bottom-4 left-0 right-0 px-4 opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-4 group-hover:translate-y-0">
-                                <button class="w-full bg-white text-black py-3 text-xs uppercase tracking-widest font-semibold shadow-lg hover:bg-black hover:text-white transition-colors">Quick Add</button>
-                            </div>
-                        </div>
-                        <div class="mt-6 flex justify-between">
-                            <div>
-                                <h3 class="text-sm text-gray-900 font-medium"><a href="#">Classic Trench Coat</a></h3>
-                                <p class="mt-1 text-sm text-gray-500">Outerwear</p>
-                            </div>
-                            <p class="text-sm font-medium text-gray-900">$295.00</p>
-                        </div>
-                    </div>
-                    
+                    @endforelse
 
                 </div>
             </div>

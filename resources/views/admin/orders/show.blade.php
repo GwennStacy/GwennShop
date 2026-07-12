@@ -20,6 +20,9 @@
             <a href="/admin/products" class="whitespace-nowrap px-3 py-2 md:px-4 md:py-3 text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors">Products</a>
             <a href="/admin/categories" class="whitespace-nowrap px-3 py-2 md:px-4 md:py-3 text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors">Categories</a>
             <a href="/admin/orders" class="whitespace-nowrap px-3 py-2 md:px-4 md:py-3 bg-gray-800 text-white rounded-md transition-colors font-medium">Orders</a>
+            <a href="/admin/banners" class="whitespace-nowrap px-3 py-2 md:px-4 md:py-3 hover:bg-gray-800 text-gray-300 hover:text-white rounded-md transition-colors font-medium">Banners</a>
+            <a href="/admin/sliders" class="whitespace-nowrap px-3 py-2 md:px-4 md:py-3 hover:bg-gray-800 text-gray-300 hover:text-white rounded-md transition-colors font-medium">Category Sliders</a>
+            <a href="/admin/seamless-images" class="whitespace-nowrap px-3 py-2 md:px-4 md:py-3 hover:bg-gray-800 text-gray-300 hover:text-white rounded-md transition-colors font-medium">Seamless Images</a>
             <div class="hidden lg:block my-4 border-t border-gray-700 mx-2"></div>
             <a href="/" target="_blank" class="whitespace-nowrap px-3 py-2 md:px-4 md:py-3 text-gray-400 hover:text-white transition-colors">Live Store</a>
         </nav>

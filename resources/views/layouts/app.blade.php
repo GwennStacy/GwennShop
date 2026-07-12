@@ -43,8 +43,22 @@
                 </div>
 
                 <div class="flex items-center space-x-6">
-                    <button class="text-gray-900 hover:text-gray-500 transition"><i class="fas fa-search text-lg"></i></button>
+                    <div class="relative group flex items-center">
+                        <form action="/search" method="GET" class="flex items-center">
+                            <input type="text" name="q" placeholder="Search..." class="w-0 opacity-0 group-hover:w-48 group-hover:opacity-100 focus:w-48 focus:opacity-100 transition-all duration-300 ease-in-out border-b border-gray-300 bg-transparent focus:outline-none focus:border-black text-sm px-2 py-1 mr-1" required>
+                            <button type="submit" class="text-gray-900 hover:text-gray-500 transition"><i class="fas fa-search text-lg"></i></button>
+                        </form>
+                    </div>
                     <button class="text-gray-900 hover:text-gray-500 transition"><i class="far fa-user text-lg"></i></button>
+                    
+                    <a href="/favorites" class="text-gray-600 hover:text-black transition-colors relative cursor-pointer mr-4" title="Favorites">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                        </svg>
+                        <span id="favorites-count-badge" class="absolute -top-2 -right-2 bg-black text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center {{ session('favorites') && count(session('favorites')) > 0 ? '' : 'hidden' }}">
+                            {{ session('favorites') ? count(session('favorites')) : 0 }}
+                        </span>
+                    </a>
                     
                     <a href="/cart" class="text-gray-600 hover:text-black transition-colors relative cursor-pointer">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -136,5 +150,44 @@
         </div>
     </footer>
 
+    <script>
+        function toggleFavorite(productId) {
+            fetch('/favorites/toggle', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                },
+                body: JSON.stringify({ product_id: productId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if(data.success) {
+                    const heartIcons = document.querySelectorAll('.heart-icon-' + productId);
+                    heartIcons.forEach(icon => {
+                        if(data.status === 'added') {
+                            icon.classList.remove('fill-none', 'text-gray-500');
+                            icon.classList.add('fill-red-500', 'text-red-500');
+                        } else {
+                            icon.classList.remove('fill-red-500', 'text-red-500');
+                            icon.classList.add('fill-none', 'text-gray-500');
+                        }
+                    });
+
+                    // Update favorites count badge in navbar
+                    const badge = document.getElementById('favorites-count-badge');
+                    if (badge) {
+                        if (data.favorites_count > 0) {
+                            badge.textContent = data.favorites_count;
+                            badge.classList.remove('hidden');
+                        } else {
+                            badge.classList.add('hidden');
+                        }
+                    }
+                }
+            })
+            .catch(error => console.error('Error toggling favorite:', error));
+        }
+    </script>
 </body>
 </html>

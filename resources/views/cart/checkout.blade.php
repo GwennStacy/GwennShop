@@ -127,6 +127,7 @@
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://khqr.cc/khqrcc-plugin.js"></script>
 
 <script>
     $('#checkout-form').on('submit', function(e) {
@@ -146,23 +147,56 @@
                 processData: false,
                 contentType: false,
                 success: function(response) {
-                    if(response.success) {
-                        // 🚀 លោតផ្ទាំង QR Code របស់ ABA នៅលើវេបសាយតែម្ដង!
-                        Swal.fire({
-                            title: 'ស្កេនដើម្បីទូទាត់ប្រាក់',
-                            html: '<p style="color:gray; font-size:14px; margin-bottom:10px;">សូមប្រើប្រាស់កម្មវិធី ABA Mobile ដើម្បីស្កេន</p>',
-                            imageUrl: response.qr_image, // យករូបពី Backend មកបង្ហាញ
-                            imageWidth: 250,
-                            imageHeight: 250,
-                            imageAlt: 'ABA QR Code',
-                            confirmButtonText: 'ទូទាត់រួចរាល់',
-                            confirmButtonColor: '#00bcd4', // ពណ៌ខៀវ ABA
-                            allowOutsideClick: false
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                window.location.href = '/'; // លោតទៅទំព័រដើមពេលចុចបង់រួច
+                    if(response.success && response.checkout_url) {
+                        // បើកផ្ទាំង ABA Payway រក្សាសិទ្ធិពី KHQRcc តែម្តង
+                        let checkInterval; // ប្រកាសអថេរសម្រាប់ទុក Polling
+
+                        KhqrPayway.openCheckout({
+                            checkout_url: response.checkout_url,
+                            onSuccess: function(res) {
+                                // ពេល Plugin ដំណើរការ onSuccess បានត្រឹមត្រូវ
+                                clearInterval(checkInterval); // ឈប់ Polling
+                                window.location.href = '/aba/verify?transaction_id=' + (res.transaction_id || ''); // ឬឆែកកូដ Verification បន្ត
+                            },
+                            onError: function(err) {
+                                // ពេលអតិថិជនចុចខ្វែង (X) ឬមានបញ្ហា
+                                clearInterval(checkInterval); // ឈប់ Polling
+                                btn.text(originalText).prop('disabled', false); // បើកប៊ូតុងអោយចុចបានវិញ
+                                Swal.fire('Cancelled', 'ការបង់ប្រាក់ត្រូវបានបោះបង់!', 'info');
                             }
                         });
+
+                        // ដោយសារ Plugin ពេលខ្លះមិនបិទខ្លួនឯង ពួកយើងត្រូវឆែកមើលរៀងរាល់ ៣ វិនាទី (Polling Fallback)
+                        let txId = response.checkout_url.match(/transaction_id=([^&]+)/);
+                        if (txId && txId[1]) {
+                            checkInterval = setInterval(function() {
+                                $.ajax({
+                                    url: '/aba/verify',
+                                    method: 'POST',
+                                    data: {
+                                        _token: $('input[name="_token"]').val(),
+                                        transaction_id: txId[1]
+                                    },
+                                    success: function(verifyRes) {
+                                        if (verifyRes.success) {
+                                            clearInterval(checkInterval); // ឈប់ឆែក
+                                            
+                                            // បិទផ្ទាំង KhqrPayway ដោយកូដ
+                                            if (typeof KhqrPayway !== 'undefined') {
+                                                KhqrPayway.closeCheckoutByContinueUrl();
+                                            }
+                                            
+                                            // លោតទៅទំព័រវិក្កយបត្រ
+                                            if (verifyRes.order_id) {
+                                                window.location.href = '/order-success/' + verifyRes.order_id;
+                                            } else {
+                                                window.location.href = '/';
+                                            }
+                                        }
+                                    }
+                                });
+                            }, 3000); // ឆែករាល់ 3 វិនាទី
+                        }
                     } else {
                         Swal.fire('Error', response.message || 'Payment Failed', 'error');
                         btn.text(originalText).prop('disabled', false); 
@@ -177,7 +211,7 @@
         } else {
             // (កូដ COD សរសេរធម្មតាទុកដដែល)
             $.ajax({
-                url: formActionUrl, 
+                url: '/checkout',
                 method: 'POST',
                 data: new FormData(this),
                 processData: false,

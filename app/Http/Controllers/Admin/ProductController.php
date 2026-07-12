@@ -10,13 +10,26 @@ use Illuminate\Support\Str;
 class ProductController extends Controller
 {
     // Show the dashboard with all products
-   public function index()
+   public function index(Request $request)
     {
-        // ប្រើ paginate(20) ដើម្បីកាត់យកត្រឹម ២០ ក្នុងមួយទំព័រ
-        // (បើចង់តម្រៀបថ្មីនៅមុនគេ អាចប្រើ orderBy('id', 'desc')->paginate(20); ក៏បាន)
-        $products = \App\Models\Product::paginate(10);
+        $query = \App\Models\Product::query();
 
-        return view('admin.products.index', compact('products'));
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                  ->orWhere('category', 'like', '%' . $search . '%');
+            });
+        }
+
+        if ($request->has('category') && $request->category != '') {
+            $query->where('category', $request->category);
+        }
+
+        $products = $query->paginate(10)->appends($request->all());
+        $categories = \App\Models\Category::all();
+
+        return view('admin.products.index', compact('products', 'categories'));
     }
 
     // Show the form to create a new product
@@ -94,7 +107,8 @@ public function destroy($id)
     public function edit($id)
     {
         $product = \App\Models\Product::findOrFail($id);
-        return view('admin.products.edit', compact('product'));
+        $categories = \App\Models\Category::all();
+        return view('admin.products.edit', compact('product', 'categories'));
     }
 
     // ២. Update ទិន្នន័យថ្មីចូល Database

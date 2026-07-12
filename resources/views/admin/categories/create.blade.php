@@ -19,6 +19,9 @@
             <a href="/admin/categories" class="px-4 py-3 bg-gray-800 text-white rounded-md transition-colors font-medium">Categories</a>
             
             <a href="/admin/orders" class="px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors">Orders</a>
+            <a href="/admin/banners" class="px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors">Banners</a>
+            <a href="/admin/sliders" class="px-4 py-3 text-gray-300 hover:text-white hover:bg-gray-800 rounded-md transition-colors">Category Sliders</a>
+            <a href="/admin/seamless-images" class="block px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-800 rounded transition-colors">Seamless Images</a>
             
             <div class="my-4 border-t border-gray-700 mx-2"></div>
             

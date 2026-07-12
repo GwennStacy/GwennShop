@@ -20,6 +20,9 @@
     
     <!-- យកកូដខាងក្រោមនេះ មក Paste ដាក់នៅត្រង់ចន្លោះនេះ -->
     <a href="/admin/orders" class="block px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-800 rounded transition-colors">Orders</a>
+    <a href="/admin/banners" class="block px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-800 rounded transition-colors">Banners</a>
+    <a href="/admin/sliders" class="block px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-800 rounded transition-colors">Category Sliders</a>
+            <a href="/admin/seamless-images" class="block px-4 py-3 text-gray-400 hover:text-white hover:bg-gray-800 rounded transition-colors">Seamless Images</a>
 
     <a href="/" target="_blank" class="block px-4 py-3 mt-8 text-gray-400 hover:text-white hover:bg-gray-800 rounded transition-colors border-t border-gray-700">View Live Store</a>
 
@@ -29,9 +32,26 @@
     <main class="flex-1 p-8">
         <div class="flex justify-between items-center mb-8">
             <h1 class="text-3xl font-bold text-gray-800">Manage Products</h1>
-            <a href="/admin/products/create" class="bg-black text-white px-6 py-2 rounded hover:bg-gray-800 transition">
-                + Add New Product
-            </a>
+            <div class="flex items-center gap-4">
+                <form action="/admin/products" method="GET" class="flex gap-2">
+                    <select name="category" class="border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-800 bg-white" onchange="this.form.submit()">
+                        <option value="">All Categories</option>
+                        @foreach($categories as $cat)
+                            <option value="{{ $cat->name }}" {{ request('category') == $cat->name ? 'selected' : '' }}>
+                                {{ $cat->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <input type="text" name="search" value="{{ request('search') }}" placeholder="Search products..." class="border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-800">
+                    <button type="submit" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900 transition">Search</button>
+                    @if(request('search') || request('category'))
+                        <a href="/admin/products" class="bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400 transition">Clear</a>
+                    @endif
+                </form>
+                <a href="/admin/products/create" class="bg-black text-white px-6 py-2 rounded hover:bg-gray-800 transition">
+                    + Add New Product
+                </a>
+            </div>
         </div>
 
         @if(session('success'))

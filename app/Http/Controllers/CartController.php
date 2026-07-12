@@ -127,12 +127,7 @@ class CartController extends Controller
         ]);
     }
 
-    // 🚀 យុទ្ធសាស្ត្ររត់គេចយកពិន្ទុ៖ បង្ហាញរូបភាព myqr.jpg ចំៗ គ្មានថ្ងៃ Timeout!
-    // ១. មុខងារបង្កើត QR ពិតប្រាកដចេញពី Server ធនាគារជាតិ
-   // 🚀 មុខងារបង្កើត QR ពិតប្រាកដ (Dynamic QR) ស្តង់ដារធនាគារ
-    // ១. មុខងារបង្កើត Dynamic QR (កំណត់ចំនួនប្រាក់ និងលេខ MD5 ពិតប្រាកដ)
-  // ១. បង្កើត Dynamic QR ពិតប្រាកដ ដែលធានាថាស្កេនដើរ ១០០% ចូលកុង ABA របស់មេ
-   public function payWithAbaPayway(Request $request)
+     public function payWithAbaPayway(Request $request)
     {
         try {
             $total = 0;
@@ -142,70 +137,128 @@ class CartController extends Controller
                 }
             }
             
-            // បើទិញតិចជាង ១ដុល្លារ បង្ខំឱ្យស្មើ ១ដុល្លារ សម្រាប់តេស្ត
-            if ($total < 1) {
-                $total = 1.00;
-            }
+            // Remove the 1 dollar limit so user can test with 0.01
             $amount = number_format((float)$total, 2, '.', '');
 
-            $merchantId = env('ABA_PAYWAY_MERCHANT_ID');
-            $apiKey     = env('ABA_PAYWAY_API_KEY');
+            $token = env('KHQRPAY_API_TOKEN');
+            $apiUrl = env('KHQRPAY_API_URL', 'https://api.khqr.cc/v1/generate');
             
-            $reqTime    = date('YmdHis'); 
-            $tranId     = time(); 
             $firstName  = $request->first_name ?? 'Guest';
             $lastName   = $request->last_name ?? 'User';
             $phone      = $request->phone ?? '012345678';
             $email      = 'skimheng47@gmail.com'; 
-            $returnUrl  = base64_encode(url('/')); 
 
-            $hashData = $reqTime . $merchantId . $tranId . $amount . $firstName . $lastName . $email . $phone . $returnUrl;
-            $hash = base64_encode(hash_hmac('sha512', $hashData, $apiKey, true));
+            // 🚀 បង្កើត URL សម្រាប់ទូទាត់ប្រាក់តាមរយៈ KHQRcc (Checkout Plugin)
+            $transaction_id = 'ORD_' . time() . rand(100, 999);
+            $success_url = ''; // Let JS handle the redirect
+            $remark = 'Lumiere Store Order';
+            $amountStr = number_format((float)$total, 2, '.', ''); // format to 0.00
 
-            // 🚀 បាញ់សំណើទៅ ABA ដោយផ្ទាល់ពី Server របស់យើង
-            $response = \Illuminate\Support\Facades\Http::asForm()->post('https://checkout-sandbox.payway.com.kh/api/payment-gateway/v1/payments/purchase', [
-                'req_time'    => $reqTime,
-                'merchant_id' => $merchantId,
-                'tran_id'     => $tranId,
-                'amount'      => $amount,
-                'firstname'   => $firstName,
-                'lastname'    => $lastName,
-                'email'       => $email,
-                'phone'       => $phone,
-                'return_url'  => $returnUrl,
-                'hash'        => $hash
+            $secret_key = env('KHQRPAY_API_SECRET', 'YOUR_SECRET_HERE');
+            $profile_id = '5naBW0cACcdMewjeavsGmbvR9Fvv0PAz'; // Profile ID from screenshot
+            $gateway_url = 'https://khqr.cc/api/payment/requestv2';
+
+            $payment_data = [
+                "transaction_id" => $transaction_id,
+                "amount"         => $amountStr,
+                "success_url"    => $success_url,
+                "remark"         => $remark
+            ];
+
+            // គណនា Security Hash (sha1)
+            $payment_data['hash'] = sha1(
+                $secret_key
+                . $payment_data['transaction_id']
+                . $payment_data['amount']
+                . $payment_data['success_url']
+                . $payment_data['remark']
+            );
+
+            // Generate Checkout URL
+            $checkout_url = $gateway_url . "/" . $profile_id . "?" . http_build_query($payment_data);
+
+            // Save Order ចូល Database
+            $order = new \App\Models\Order();
+            $order->first_name = $firstName;
+            $order->last_name = $lastName;
+            $order->phone = $phone;
+            $order->address = $request->address ?? 'Phnom Penh';
+            $order->total_amount = $total;
+            $order->payment_method = 'ABA / KHQRPay';
+            $order->status = 'Pending';
+            $order->transaction_id = $transaction_id;
+            $order->save();
+
+            session()->forget('cart');
+
+            // បោះ Checkout URL ត្រឡប់ទៅ Frontend វិញ
+            return response()->json([
+                'success'      => true,
+                'checkout_url' => $checkout_url
             ]);
 
-            $abaData = $response->json(); // បម្លែងទិន្នន័យដែល ABA ឆ្លើយតប
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Exception: ' . $e->getMessage()]);
+        }
+    }
 
-            // បើ ABA ឆ្លើយតបថាជោគជ័យ (Code: 00)
-            if (isset($abaData['status']['code']) && $abaData['status']['code'] == '00') {
-                
-                // Save Order ចូល Database
-                $order = new \App\Models\Order();
-                $order->first_name = $firstName;
-                $order->last_name = $lastName;
-                $order->phone = $phone;
-                $order->address = $request->address ?? 'Phnom Penh';
-                $order->total_amount = $total;
-                $order->payment_method = 'ABA PayWay';
-                $order->status = 'Pending';
-                $order->save();
-
-                session()->forget('cart');
-
-                // បោះរូបភាព QR Code ត្រឡប់ទៅឱ្យអតិថិជនមើល
-                return response()->json([
-                    'success'  => true,
-                    'qr_image' => $abaData['qrImage'] // នេះជារូបភាព QR ដែល ABA ឱ្យមក
-                ]);
-
-            } else {
-                return response()->json(['success' => false, 'message' => $abaData['status']['message'] ?? 'ABA Error']);
+    public function verifyPayment(Request $request)
+    {
+        try {
+            $txId = $request->input('transaction_id');
+            if (!$txId) {
+                return response()->json(['success' => false, 'message' => 'No transaction ID']);
             }
 
+            $profile_id = '5naBW0cACcdMewjeavsGmbvR9Fvv0PAz';
+            $verify_url = "https://khqr.cc/api/{$profile_id}/payment-gateway/v1/payments/check-trans";
+            
+            // Security Hash using profile_key (which is the same as profile_id for this API)
+            $hash = sha1($profile_id . $txId);
+
+            $postData = [
+                'transaction_id' => $txId,
+                'hash' => $hash
+            ];
+
+            $response = \Illuminate\Support\Facades\Http::asForm()->post($verify_url, $postData);
+            $result = $response->json();
+            
+            \Illuminate\Support\Facades\Log::info('KHQR Verify Response:', ['url' => $verify_url, 'data' => $postData, 'result' => $result]);
+
+            // ✅ Real success condition
+            $isPaid = (
+                isset($result['responseCode']) &&
+                (int)$result['responseCode'] === 0 &&
+                isset($result['data']['status']) &&
+                strtolower($result['data']['status']) === 'success'
+            );
+
+            if ($isPaid) {
+                // Update Order Status in Database
+                $order = \App\Models\Order::where('transaction_id', $txId)->first();
+                if ($order && $order->status == 'Pending') {
+                    $order->status = 'Completed';
+                    $order->save();
+                }
+
+                return response()->json([
+                    'success' => true, 
+                    'message' => 'Payment confirmed', 
+                    'amount'  => $result['data']['amount'] ?? 0,
+                    'order_id'=> $order ? $order->id : null
+                ]);
+            }
+
+            return response()->json(['success' => false, 'message' => 'Payment not verified', 'data' => $result]);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()]);
+            return response()->json(['success' => false, 'message' => 'Exception: ' . $e->getMessage()]);
         }
+    }
+
+    public function orderSuccess($id)
+    {
+        $order = \App\Models\Order::findOrFail($id);
+        return view('cart.success', compact('order'));
     }
 }

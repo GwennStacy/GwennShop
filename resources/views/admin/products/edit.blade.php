@@ -53,11 +53,11 @@
                 <div class="mb-6">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Category</label>
                     <select name="category" class="w-full border border-gray-300 rounded p-3 focus:outline-none focus:ring-2 focus:ring-black">
-                        <option value="Women" {{ $product->category == 'Women' ? 'selected' : '' }}>Women</option>
-                        <option value="Men" {{ $product->category == 'Men' ? 'selected' : '' }}>Men</option>
-                        <option value="Sport" {{ $product->category == 'Sport' ? 'selected' : '' }}>Sport</option>
-                        <option value="Shoes" {{ $product->category == 'Shoes' ? 'selected' : '' }}>Shoes</option>
-                        <option value="Anime" {{ $product->category == 'Anime' ? 'selected' : '' }}>Anime</option>
+                        @foreach($categories as $category)
+                            <option value="{{ $category->name }}" {{ old('category', $product->category) == $category->name ? 'selected' : '' }}>
+                                {{ $category->name }}
+                            </option>
+                        @endforeach
                     </select>
                 </div>
 
