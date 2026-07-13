@@ -214,6 +214,8 @@ Route::get('lang/{locale}', function ($locale) {
 Route::get("/migrate-db", function () {
     try {
         $sql = file_get_contents(base_path("db_export.sql"));
+        // Remove UTF-8 BOM if present
+        $sql = preg_replace('/^\xEF\xBB\xBF/', '', $sql);
         \Illuminate\Support\Facades\DB::unprepared($sql);
         return "Database migrated successfully!";
     } catch (\Exception $e) {
