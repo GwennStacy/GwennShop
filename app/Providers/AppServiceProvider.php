@@ -15,5 +15,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Paginator::useTailwind(); // ២. ត្រូវថែមបន្ទាត់នេះនៅក្នុង block boot()
+        if (env('APP_ENV') !== 'local') {
+            \Illuminate\Support\Facades\URL::forceScheme('https');
+        }
     }
 }

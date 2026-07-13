@@ -11,6 +11,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->trustProxies(at: '*');
         // នេះហើយកន្លែងដែលយើងចុះឈ្មោះ Middleware ថ្មី!
         $middleware->web(append: [
             \App\Http\Middleware\SetLocale::class,
